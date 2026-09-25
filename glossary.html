@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Read the Wind">
+<meta name="theme-color" content="#0A1F4C">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="stylesheet" href="app.css">
+<title>What the words mean</title>
+<script>
+/* set text size and background before first paint so there is no flash */
+try {
+  var p = JSON.parse(localStorage.getItem('lk.prefs.v1') || '{}');
+  var s = ['17px','20px','23px','26px'][p.size == null ? 1 : p.size];
+  document.documentElement.style.setProperty('--fs', s);
+  var sysDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  var th = p.theme || (sysDark ? 'dark' : 'light');
+  document.addEventListener('DOMContentLoaded', function () {
+    document.body.classList.add('t-' + th);
+  });
+} catch (e) {}
+</script>
+
+<noscript><style>
+/* without JavaScript the cover cannot be dismissed, and the panels do not open */
+#cvoverlay { display: none !important; }
+.nojs { display: block; }
+</style></noscript>
+</head>
+<body class="" data-page="glossary">
+<header class="bar">
+  <a class="bar-b" href="./" aria-label="Contents">Contents</a>
+  <div class="bar-t">What the words mean</div>
+  <div class="bar-r">
+    <button class="bar-b" id="btn-marks" aria-label="My marks">Marks</button>
+    <button class="bar-b" id="btn-mode" aria-label="Switch between bright and dark">Dark</button>
+    <button class="bar-b" id="btn-read" aria-label="Reading settings">Aa</button>
+  </div>
+</header>
+<main class="wrap">
+<h1>What the words mean</h1><p class="sub">Every word with a dotted line in the book is here, in alphabetical order. Where the coach has a Spanish word for it, it is at the end of the entry.</p><div class="gitem" id="G13"><h3>Beat</h3><p>The upwind leg. You sail it in a zigzag because no boat can sail straight into the wind.</p><p>At the club: ceñida.</p></div><div class="gitem" id="G11"><h3>Close-hauled</h3><p>Sailing as close to the wind as you can while the sail still drives the boat. On the beat you sail close-hauled on port and starboard in turn.</p><p>At the club: ceñir.</p></div><div class="gitem" id="G18"><h3>Dirty air</h3><p>Wind that another boat&#x27;s sail has slowed and bent. It lies behind and to leeward of every boat, and it makes you slower and lower.</p><p>At the club: aire sucio.</p></div><div class="gitem" id="G17"><h3>Embat</h3><p>The afternoon sea breeze in Mallorca. It fills in from the sea as the land heats up during the day.</p><p>At the club: embat.</p></div><div class="gitem" id="G20"><h3>Gap</h3><p>Space on the start line, usually just below you, that lets you bear away and speed up before the gun.</p><p>At the club: hueco.</p></div><div class="gitem" id="G16"><h3>Gust</h3><p>A patch of stronger wind. It usually shows as darker, rougher water moving down the course.</p><p>At the club: racha.</p></div><div class="gitem" id="G4"><h3>Header</h3><p>A shift that pushes your bow lower, further from straight upwind, on the tack you are on. In most of the course you see it as your bow swinging away from the mark. On a day when the wind swings back and forth, a real header means tack.</p><p>The same shift is a lift for the boats on the other tack.</p></div><div class="gitem" id="G1"><h3>Ladder rung</h3><p>A rung is an imaginary line across the course, at right angles to the wind. The mark sits at the top of the ladder.</p><p>Boats on the same rung are level: they have the same amount of upwind still to sail, however far apart they are, as long as neither has sailed past a layline. When the wind changes direction the rungs turn with it, and that is what moves boats ahead or behind.</p></div><div class="gitem" id="G8"><h3>Layline</h3><p>The line from which you can just reach the mark on one tack, sailing close-hauled. When you reach it, you tack once and sail straight to the mark.</p></div><div class="gitem" id="G10"><h3>Leverage</h3><p>How far apart you are sideways from another boat or group. More leverage means a bigger gain if the next shift comes your way, and a bigger loss if it goes the other way.</p></div><div class="gitem" id="G3"><h3>Lift</h3><p>A shift that lets you point higher, closer to straight upwind, on the tack you are on. In most of the course you see it as your bow swinging towards the mark. Keep going.</p><p>The same shift is a header for the boats on the other tack.</p></div><div class="gitem" id="G5"><h3>Lifted tack</h3><p>The tack that points closer to straight upwind right now. After a shift to the right it is starboard tack; after a shift to the left it is port tack. After a header on one tack, the other tack is the lifted one.</p></div><div class="gitem" id="G12"><h3>The mark</h3><p>In this book, the mark always means the windward mark at the top of the first beat. In the pictures it sits right under the wind arrow.</p><p>At the club: boya, or boya de barlovento. The rule book calls it a baliza.</p></div><div class="gitem" id="G15"><h3>One-way shift</h3><p>Wind that keeps turning the same way. The side it is turning towards wins, so go there first, even on a header.</p><p>At the club: rolada persistente.</p></div><div class="gitem" id="G9"><h3>Overstand</h3><p>To sail past the layline, so that after your last tack you have to ease the sheet and reach down to the mark. The extra distance is wasted.</p></div><div class="gitem" id="G21"><h3>Pin end</h3><p>The end of the start line marked by a buoy, opposite the committee boat.</p><p>At the club: boya de salida.</p></div><div class="gitem" id="G7"><h3>Port tack and starboard tack</h3><p>You are on starboard tack when the wind comes over the right-hand side of your boat and your boom is out on the left. On port tack it is the other way round.</p><p>When two boats on opposite tacks meet, the boat on port must keep clear of the boat on starboard.</p><p>At the club: amurado a babor, amurado a estribor.</p></div><div class="gitem" id="G14"><h3>Swinging shift</h3><p>Wind that swings left, then right, then left again, around its average direction. Tack on the headers.</p><p>At the club: rolada oscilante.</p></div><div class="gitem" id="G6"><h3>Tack</h3><p>To turn the bow through the wind, from port tack to starboard tack or back again.</p><p>At the club: virar.</p></div><div class="gitem" id="G19"><h3>Transit</h3><p>Two things lined up, such as the pin end and a building on shore behind it. When they line up, you know you are on the start line.</p><p>At the club: enfilación.</p></div><div class="gitem" id="G2"><h3>Wind shift</h3><p>A change in the direction the wind comes from. A shift to the right means the wind now comes from further right as you look up the course towards the mark.</p><p>At the club: rolada. “El viento rola” means the wind is shifting.</p></div>
+</main>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body></html>

@@ -1,0 +1,538 @@
+/* Read the Wind and Start Clean — reading layer.
+   The 49er theory book's layer, unchanged, with three additions at the end:
+   moving diagrams, the On the water box and chapters still to come. */
+
+:root {
+  --fs: 20px;
+  --measure: 33em;
+  --ink: #15181C;
+  --ink-2: #4A5560;
+  --ink-3: #6E7B87;
+  --navy: #0F3D5E;
+  --navy-2: #1E5C86;
+  --brass: #9A7B3F;
+  --bg: #FAFAF7;
+  --bg-2: #F1F0EA;
+  --bg-3: #E6E5DE;
+  --rule: #D8D6CD;
+  --rule-2: #C2BFB4;
+  --mark: #FCE49A;
+  --mark-2: #F7D571;
+  --sh: 0 1px 2px rgba(20,24,28,.06), 0 8px 28px rgba(20,24,28,.12);
+  --radius: 14px;
+  --wind: #1F6FB2; --good: #23824F; --warn: #B8740A; --buoy: #E2701C;
+}
+
+body.t-sepia {
+  --ink: #241E15; --ink-2: #574B3B; --ink-3: #7A6B58;
+  --bg: #F6EEDF; --bg-2: #EFE4CF; --bg-3: #E5D7BE;
+  --rule: #DDCDB0; --rule-2: #C9B591; --navy: #1D4258; --navy-2: #2B5F7E;
+  --wind: #1F63A0; --good: #1F7446; --warn: #A2660A;
+}
+
+body.t-dark {
+  --ink: #E8EAED; --ink-2: #A9B2BC; --ink-3: #838E99;
+  --navy: #8FC4E8; --navy-2: #A9D3F0; --brass: #D3B172;
+  --bg: #14171B; --bg-2: #1C2026; --bg-3: #262B32;
+  --rule: #2E343C; --rule-2: #3D454F;
+  --mark: #5A4A17; --mark-2: #7A6520;
+  --sh: 0 1px 2px rgba(0,0,0,.5), 0 8px 28px rgba(0,0,0,.55);
+  --wind: #7DB8EA; --good: #6CCB95; --warn: #F0B54A; --buoy: #F08A3C;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html { background: var(--bg); }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Charter, "Bitstream Charter", Georgia, "Times New Roman", serif;
+  font-size: var(--fs);
+  line-height: 1.58;
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+}
+
+/* ------------------------------------------------------------------ bar */
+.bar {
+  position: sticky; top: 0; z-index: 40;
+  display: flex; align-items: center; gap: 10px;
+  padding: max(8px, env(safe-area-inset-top)) 16px 8px;
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  backdrop-filter: saturate(180%) blur(14px);
+  border-bottom: 1px solid var(--rule);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+.bar-t {
+  flex: 1; min-width: 0; text-align: center;
+  font-size: .72em; letter-spacing: .04em; color: var(--ink-3);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.bar-r { display: flex; gap: 8px; }
+.bar-b {
+  appearance: none; border: 1px solid var(--rule-2); background: var(--bg-2);
+  color: var(--navy); border-radius: 999px; padding: 7px 14px;
+  font: inherit; font-size: .7em; font-weight: 600; letter-spacing: .01em;
+  text-decoration: none; cursor: pointer; white-space: nowrap;
+}
+.bar-b:active { background: var(--bg-3); }
+
+/* ---------------------------------------------------------------- layout */
+.wrap {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 34px max(22px, env(safe-area-inset-left)) 120px max(22px, env(safe-area-inset-right));
+}
+
+p { margin: 0 0 .85em; }
+a { color: var(--navy); }
+
+.eyebrow {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: .62em; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--ink-3); margin: 0 0 14px;
+}
+
+h1 {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 1.92em; line-height: 1.14; font-weight: 700; letter-spacing: -.018em;
+  color: var(--navy); margin: 0 0 .1em;
+}
+h1.big { font-size: 2.1em; }
+.chnum { display: block; font-size: .48em; letter-spacing: .12em; color: var(--brass); margin-bottom: .5em; }
+
+.chhead { display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+.chhead h1 { flex: 1 1 14em; min-width: 0; }
+
+.sub { color: var(--ink-2); font-size: .88em; line-height: 1.55; }
+
+/* -------------------------------------------------------------- sections */
+.chintro { color: var(--ink-2); font-size: .95em; }
+.chintro p:first-child { font-size: 1.02em; }
+
+.sec { margin: 2.6em 0 0; scroll-margin-top: 72px; }
+.sec h2 {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 1.12em; line-height: 1.3; font-weight: 700; color: var(--navy);
+  margin: 0 0 .85em; padding-top: .85em; border-top: 2px solid var(--navy);
+  display: flex; gap: .7em; align-items: baseline;
+}
+.secnum { flex: none; color: var(--brass); font-variant-numeric: tabular-nums; }
+.sectitle { flex: 1; }
+
+h2.parth {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 1em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-3); margin: 2.2em 0 .8em;
+  padding-bottom: .5em; border-bottom: 1px solid var(--rule);
+}
+
+/* run-in headings: the fourth level six chapters use */
+p.lead { margin-top: 1.7em; }
+.leadnum {
+  display: block; font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: .62em; letter-spacing: .12em; color: var(--brass); margin-bottom: .25em;
+  font-weight: 700;
+}
+.leadtitle { color: var(--navy); }
+.leadtitle::after { content: " "; }
+
+/* ------------------------------------------------------------------ tags */
+.tg {
+  display: inline-block; vertical-align: .18em;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: .56em; font-weight: 700; letter-spacing: .03em; line-height: 1.55;
+  padding: 0 .5em; margin: 0 0 0 .18em; border-radius: 999px;
+  text-decoration: none; white-space: nowrap; cursor: pointer;
+}
+.tg-s { color: var(--navy-2); background: color-mix(in srgb, var(--navy) 11%, transparent); }
+.tg-w { color: var(--brass); background: color-mix(in srgb, var(--brass) 15%, transparent); }
+.tg:active { filter: brightness(.92); }
+.tg-def { vertical-align: baseline; font-size: .62em; margin-right: .35em; }
+
+.cv {
+  font-style: italic; color: var(--ink-3);
+  border-bottom: 1px dotted var(--rule-2); white-space: nowrap;
+}
+
+/* ------------------------------------------------- explanation panels */
+/* a term the reader can open: quiet enough to read past, clear enough to find */
+.gl {
+  appearance: none; background: none; border: 0; padding: 0; margin: 0;
+  font: inherit; color: inherit; cursor: pointer; text-align: left;
+  border-bottom: 1.5px dotted color-mix(in srgb, var(--navy) 55%, transparent);
+}
+.gl:active { background: color-mix(in srgb, var(--navy) 9%, transparent); }
+
+/* a passage whose mechanism is unpacked in place */
+.lm { border-bottom: 1.5px dotted color-mix(in srgb, var(--brass) 75%, transparent); }
+.lmb {
+  appearance: none; cursor: pointer; border: 0; margin: 0 0 0 .3em; padding: 0 .5em;
+  vertical-align: .18em; border-radius: 999px;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: .56em; font-weight: 700; letter-spacing: .04em; line-height: 1.55;
+  text-transform: uppercase;
+  color: var(--brass); background: color-mix(in srgb, var(--brass) 16%, transparent);
+}
+.lmb:active { filter: brightness(.92); }
+
+.gitem {
+  margin: 0 0 1.6em; padding: 0 0 1.4em; border-bottom: 1px solid var(--rule);
+  scroll-margin-top: 76px;
+}
+.gitem h3 {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 1em; font-weight: 700; color: var(--navy); margin: 0 0 .5em;
+}
+.gitem p { font-size: .92em; }
+.gitem:target { background: color-mix(in srgb, var(--mark) 40%, transparent);
+  border-radius: 8px; padding: .8em; }
+
+/* --------------------------------------------------------------- tables */
+.tscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 1.2em 0 1.5em; }
+table { border-collapse: collapse; font-size: .74em; line-height: 1.42; min-width: 100%; }
+th {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: .88em; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--navy); text-align: left; vertical-align: bottom;
+  padding: 0 .9em .6em; border-bottom: 2px solid var(--navy); white-space: nowrap;
+}
+td { padding: .62em .9em; vertical-align: top; border-bottom: 1px solid var(--rule); min-width: 8em; }
+tbody tr:nth-child(even) td { background: var(--bg-2); }
+td:first-child, th:first-child { padding-left: 0; }
+td:first-child { font-weight: 600; color: var(--navy); }
+
+ol, ul { margin: 0 0 1em; padding-left: 1.5em; }
+li { margin: 0 0 .55em; }
+
+/* -------------------------------------------------------------- contents */
+.chlist { list-style: none; margin: 0; padding: 0; }
+.chrow { margin: 0 0 2px; }
+.chlink {
+  display: flex; gap: .8em; align-items: baseline; text-decoration: none;
+  padding: .7em .2em; color: var(--ink); border-bottom: 1px solid var(--rule);
+}
+.chlink .chnum {
+  display: inline-block; margin: 0; flex: none; width: 1.8em;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: .8em; font-weight: 700; color: var(--brass); letter-spacing: 0;
+}
+.subs { margin: 0 0 .6em 2.6em; }
+.subs summary, .secnav summary {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: .68em; color: var(--ink-3); cursor: pointer; padding: .4em 0; list-style: none;
+}
+.subs summary::-webkit-details-marker, .secnav summary::-webkit-details-marker { display: none; }
+.subs summary::before, .secnav summary::before { content: "▸ "; }
+.subs[open] summary::before, .secnav[open] summary::before { content: "▾ "; }
+.seclist, .secnav-l { list-style: none; margin: .2em 0 .8em; padding: 0; }
+.seclist li, .secnav-l li { margin: 0; }
+.seclist a, .secnav-l a {
+  display: flex; gap: .7em; text-decoration: none; color: var(--ink-2);
+  font-size: .82em; padding: .4em 0; border-bottom: 1px solid var(--bg-3);
+}
+.seclist .n, .secnav-l .n {
+  flex: none; width: 3.2em; color: var(--brass); font-variant-numeric: tabular-nums;
+}
+.secnav { margin: 1.4em 0 0; padding: .6em 0 0; border-top: 1px solid var(--rule); }
+
+/* --------------------------------------------------------------- sources */
+.srcitem {
+  margin: 0 0 1em; padding: 0 0 1em; border-bottom: 1px solid var(--rule);
+  font-size: .88em; scroll-margin-top: 76px;
+}
+.srcitem:target { background: color-mix(in srgb, var(--mark) 45%, transparent); border-radius: 8px; padding: .6em; }
+.sus { margin-top: .35em; }
+a.su, a.ext {
+  display: block; font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: .82em; color: var(--ink-3); word-break: break-all; line-height: 1.4;
+}
+
+/* ----------------------------------------------------------- ask button */
+.askbtn {
+  flex: none; display: inline-flex; align-items: center; gap: .5em;
+  appearance: none; cursor: pointer;
+  border: 1px solid color-mix(in srgb, var(--navy) 35%, transparent);
+  background: color-mix(in srgb, var(--navy) 8%, transparent);
+  color: var(--navy); border-radius: 999px; padding: .5em 1em;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: .66em; font-weight: 600; margin-top: .6em;
+}
+.askbtn:active { background: color-mix(in srgb, var(--navy) 16%, transparent); }
+.askbtn-i {
+  display: grid; place-items: center; width: 1.5em; height: 1.5em; border-radius: 50%;
+  background: var(--navy); color: var(--bg); font-weight: 700; font-size: .85em;
+}
+.askbtn.has { border-color: var(--brass); background: color-mix(in srgb, var(--brass) 16%, transparent); color: var(--brass); }
+.askbtn.has .askbtn-i { background: var(--brass); }
+
+/* spoken walkthrough */
+.tourbtn {
+  display: flex; align-items: center; justify-content: center; gap: .7em;
+  width: 100%; appearance: none; cursor: pointer;
+  background: #F5C947; border: 1px solid #D9A81F; color: #2A1F00;
+  border-radius: 14px; padding: .95em 1.2em; margin: 0 0 26px;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: .84em; font-weight: 700; letter-spacing: .02em;
+  box-shadow: 0 1px 0 rgba(255,255,255,.45) inset, 0 2px 10px rgba(180,130,0,.22);
+}
+body.t-dark .tourbtn { background: #E7BA3A; border-color: #A8811A; color: #241A00; }
+.tourbtn:active { filter: brightness(.95); }
+.tourbtn-i {
+  display: grid; place-items: center; width: 1.7em; height: 1.7em; border-radius: 50%;
+  background: rgba(42,31,0,.14); font-size: .8em; padding-left: .12em;
+}
+.tourbtn.playing { background: #2A1F00; border-color: #2A1F00; color: #F5C947; }
+.tourbtn.playing .tourbtn-i { background: rgba(245,201,71,.2); }
+
+.pager { display: flex; justify-content: space-between; gap: 12px; margin: 3.5em 0 0; padding-top: 1.2em; border-top: 1px solid var(--rule); }
+.pn {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: .72em;
+  text-decoration: none; color: var(--navy); max-width: 46%;
+}
+
+/* ------------------------------------------------------------- marked up */
+mark.hl {
+  background: var(--mark); color: inherit; border-radius: 3px;
+  padding: .06em 0; cursor: pointer;
+  box-decoration-break: clone; -webkit-box-decoration-break: clone;
+}
+mark.hl.has-note { border-bottom: 2px solid var(--brass); }
+mark.hl.is-request { background: none; border-bottom: 2px dashed var(--navy-2); }
+
+/* --------------------------------------------------------------- floats */
+.seltool {
+  position: fixed; z-index: 60; display: none; gap: 2px; padding: 4px;
+  background: var(--ink); border-radius: 12px; box-shadow: var(--sh);
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+.seltool.on { display: flex; }
+.seltool button {
+  appearance: none; border: 0; background: none; color: #fff; cursor: pointer;
+  font: inherit; font-size: 13px; font-weight: 600; padding: 8px 12px; border-radius: 9px;
+}
+.seltool button:active { background: rgba(255,255,255,.18); }
+
+.scrim {
+  position: fixed; inset: 0; z-index: 70; background: rgba(10,16,24,.42);
+  display: none; align-items: flex-end; justify-content: center;
+  -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+}
+.scrim.on { display: flex; }
+.sheet {
+  width: min(620px, 100%); max-height: 84vh; overflow-y: auto;
+  background: var(--bg); border-radius: 20px 20px 0 0; box-shadow: var(--sh);
+  padding: 20px 22px calc(22px + env(safe-area-inset-bottom));
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: .82em;
+}
+@media (min-width: 700px) {
+  .scrim { align-items: center; }
+  .sheet { border-radius: 20px; }
+}
+.sheet h3 { margin: 0 0 4px; font-size: 1.15em; color: var(--navy); }
+.sheet .meta { color: var(--ink-3); font-size: .88em; margin: 0 0 14px; }
+.sheet .quote {
+  border-left: 3px solid var(--mark-2); padding: 2px 0 2px 12px; margin: 0 0 14px;
+  color: var(--ink-2); font-family: Charter, Georgia, serif; font-size: 1em;
+  max-height: 9em; overflow: hidden;
+}
+.sheet label { display: block; font-weight: 600; margin: 14px 0 6px; font-size: .92em; }
+.sheet textarea, .sheet input[type=text] {
+  width: 100%; font: inherit; font-size: 1em; padding: 10px 12px; border-radius: 10px;
+  border: 1px solid var(--rule-2); background: var(--bg-2); color: var(--ink); resize: vertical;
+}
+.sheet textarea { min-height: 5em; }
+.sheet select {
+  width: 100%; font: inherit; font-size: 1em; padding: 11px 12px; border-radius: 10px;
+  border: 1px solid var(--rule-2); background: var(--bg-2); color: var(--ink);
+  appearance: none; -webkit-appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--ink-3) 50%),
+                    linear-gradient(135deg, var(--ink-3) 50%, transparent 50%);
+  background-position: calc(100% - 19px) 1.15em, calc(100% - 13px) 1.15em;
+  background-size: 6px 6px, 6px 6px; background-repeat: no-repeat;
+  padding-right: 38px;
+}
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  appearance: none; cursor: pointer; font: inherit; font-size: .92em;
+  border: 1px solid var(--rule-2); background: var(--bg-2); color: var(--ink-2);
+  border-radius: 999px; padding: 8px 14px;
+}
+.chip[aria-pressed=true] { background: var(--navy); border-color: var(--navy); color: var(--bg); font-weight: 600; }
+.row { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+.btn {
+  appearance: none; cursor: pointer; font: inherit; font-size: .95em; font-weight: 600;
+  border: 1px solid var(--rule-2); background: var(--bg-2); color: var(--ink);
+  border-radius: 11px; padding: 11px 18px;
+}
+.btn-p { background: var(--navy); border-color: var(--navy); color: #fff; }
+.btn-d { color: #B3261E; border-color: color-mix(in srgb, #B3261E 35%, transparent); }
+.row .btn { flex: 1 1 auto; }
+.spacer { flex: 1; }
+
+/* reading settings */
+.setrow { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin: 18px 0; }
+.seg { display: flex; gap: 6px; }
+.seg button {
+  appearance: none; cursor: pointer; font: inherit; font-weight: 600;
+  border: 1px solid var(--rule-2); background: var(--bg-2); color: var(--ink-2);
+  border-radius: 10px; padding: 9px 14px; min-width: 44px;
+}
+.seg button[aria-pressed=true] { background: var(--navy); border-color: var(--navy); color: #fff; }
+
+/* ----------------------------------------------------------- marks page */
+.marks-tools { display: flex; gap: 10px; margin: 0 0 22px; flex-wrap: wrap;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: .8em; }
+.marks-list { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: .82em; }
+.mk {
+  border: 1px solid var(--rule); border-radius: var(--radius); padding: 14px 16px;
+  margin: 0 0 12px; background: var(--bg-2);
+}
+.mk-h { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.mk-s { font-weight: 700; color: var(--brass); font-variant-numeric: tabular-nums; }
+.mk-c { color: var(--ink-3); font-size: .92em; flex: 1; min-width: 0; }
+.mk-k {
+  font-size: .78em; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+  padding: 2px 8px; border-radius: 999px; background: var(--bg-3); color: var(--ink-2);
+}
+.mk-k.request { background: color-mix(in srgb, var(--navy) 14%, transparent); color: var(--navy); }
+.mk-q {
+  font-family: Charter, Georgia, serif; font-size: 1.08em; color: var(--ink);
+  border-left: 3px solid var(--mark-2); padding-left: 12px; margin: 0 0 8px;
+}
+.mk-n { color: var(--ink-2); margin: 8px 0 0; }
+.mk-n b { color: var(--navy); }
+.mk-a { display: flex; gap: 8px; margin-top: 12px; }
+.mk-a button, .mk-a a {
+  appearance: none; cursor: pointer; font: inherit; font-size: .9em; text-decoration: none;
+  border: 1px solid var(--rule-2); background: var(--bg); color: var(--ink-2);
+  border-radius: 9px; padding: 7px 12px;
+}
+.empty { color: var(--ink-3); text-align: center; padding: 40px 0; }
+
+.toast {
+  position: fixed; left: 50%; bottom: calc(28px + env(safe-area-inset-bottom));
+  transform: translateX(-50%); z-index: 90;
+  background: var(--ink); color: var(--bg); padding: 12px 20px; border-radius: 999px;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 14px; font-weight: 600;
+  box-shadow: var(--sh); opacity: 0; pointer-events: none; transition: opacity .18s;
+}
+.toast.on { opacity: 1; }
+
+@media print {
+  .bar, .seltool, .scrim, .askbtn, .pager, .secnav { display: none !important; }
+}
+
+/* ================================================= additions for Lukas */
+
+/* moving diagrams: blue is wind, green is the good route, amber is careful */
+.fig { margin: 1.5em 0 1.7em; }
+.fig svg {
+  display: block; width: 100%; height: auto; background: var(--bg-2);
+  border: 1px solid var(--rule); border-radius: 14px;
+}
+.fig figcaption {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: .68em; line-height: 1.45; color: var(--ink-3); margin: .65em .2em 0;
+}
+.fig figcaption b { color: var(--ink-2); }
+.fig text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+.fig .t   { fill: var(--ink-2); font-size: 11px; }
+.fig .tb  { fill: var(--ink); font-size: 12px; font-weight: 700; }
+.fig .tw  { fill: var(--wind); font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+.fig .tg2 { fill: var(--good); font-size: 12px; font-weight: 700; }
+.fig .ta  { fill: var(--warn); font-size: 12px; font-weight: 700; }
+.fig .wind  { stroke: var(--wind); fill: none; stroke-width: 3; stroke-linecap: round; }
+.fig .windh { fill: var(--wind); }
+.fig .rung  { stroke: var(--rule-2); stroke-width: 1.2; stroke-dasharray: 5 5; fill: none; }
+.fig .rungg { stroke: var(--good); stroke-width: 2.4; fill: none; }
+.fig .runga { stroke: var(--warn); stroke-width: 2.4; fill: none; }
+.fig .good  { stroke: var(--good); stroke-width: 2.4; fill: none; stroke-linecap: round; }
+.fig .gooddash { stroke: var(--good); stroke-width: 2; fill: none; stroke-dasharray: 6 5; }
+.fig .warn  { stroke: var(--warn); stroke-width: 2.4; fill: none; stroke-linecap: round; }
+.fig .warnfat { stroke: var(--warn); stroke-width: 7; fill: none; opacity: .35; stroke-linecap: round; }
+.fig .guide { stroke: var(--ink-3); stroke-width: 1; fill: none; stroke-dasharray: 2 4; }
+.fig .bow   { stroke: var(--ink-2); stroke-width: 1.4; fill: none; stroke-dasharray: 4 3; }
+.fig .buoy  { fill: var(--buoy); stroke: var(--bg); stroke-width: 1.5; }
+.fig .you   { fill: var(--navy); stroke: var(--navy); }
+.fig .other { fill: var(--bg); stroke: var(--ink-2); stroke-width: 1.4; }
+.fig .black { fill: var(--ink); stroke: var(--ink); }
+.fig .sail  { stroke: var(--ink-2); stroke-width: 1.6; fill: none; stroke-linecap: round; }
+
+/* the closing box of every section: one thing to try, and how to know */
+.otw {
+  margin: 1.3em 0 0; padding: .85em 1.05em; border-radius: 14px;
+  background: color-mix(in srgb, var(--good) 9%, transparent);
+  border: 1px solid color-mix(in srgb, var(--good) 38%, transparent);
+  font-size: .95em;
+}
+.otw .otwk {
+  display: block; margin-bottom: .3em;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: .64em; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--good);
+}
+.otw .otwg { font-weight: 700; color: var(--good); }
+
+/* chapters still to be written */
+.chlink.soon { color: var(--ink-3); cursor: default; }
+.chlink.soon .chnum { color: var(--ink-3); }
+.soonpill {
+  margin-left: auto; flex: none; align-self: center;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: .56em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--ink-3); background: var(--bg-3); border-radius: 999px; padding: .2em .7em;
+}
+.pn.off { color: var(--ink-3); }
+.seclist .nolink {
+  display: flex; gap: .7em; color: var(--ink-3);
+  font-size: .82em; padding: .4em 0; border-bottom: 1px solid var(--bg-3);
+}
+.seclist .nolink .n { flex: none; width: 3.2em; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+/* a small sketch, narrower than a figure */
+.fig.sketch { max-width: 15em; margin-left: auto; margin-right: auto; }
+.fig.sketch figcaption { text-align: center; }
+
+/* ------------------------------------------------------- backup and restore
+   Build 5, from the 49er book's build 12. mk-state is the one place the reader
+   is told whether his marks exist anywhere but on the iPad in his hands, so it
+   sits above the list and is never silent. */
+.mk-state {
+  margin: 0 0 16px;
+  padding: 11px 14px;
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--brass);
+  border-radius: 8px;
+  background: var(--bg-2);
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: .8em;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.mk-state:empty { display: none; }
+.mk-state b { color: var(--ink); font-weight: 650; }
+.mk-state .warn { display: block; margin-top: .4em; color: var(--ink); }
+/* the picker is driven by the button in the Put back sheet, never shown */
+#mk-file { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+/* big enough that a whole email obviously fits */
+#rs-t { min-height: 8.5em; }
+
+/* the warning shown in the claude.ai copy, where Safari forgets marks on closing */
+.framenote {
+  display: flex; align-items: center; gap: 12px;
+  margin: 0 0 18px; padding: 11px 14px;
+  border: 1px solid color-mix(in srgb, var(--warn) 45%, transparent);
+  border-left: 3px solid var(--warn);
+  border-radius: 8px; background: var(--bg-2);
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: .8em; line-height: 1.45;
+}
+.framenote p { margin: 0; flex: 1; }
+.framenote .btn { flex: none; }
+.framewrap { padding-top: 18px; padding-bottom: 0; }
+.framewrap .framenote { margin: 0; }

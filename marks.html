@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Read the Wind">
+<meta name="theme-color" content="#0A1F4C">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="stylesheet" href="app.css">
+<title>Marks</title>
+<script>
+/* set text size and background before first paint so there is no flash */
+try {
+  var p = JSON.parse(localStorage.getItem('lk.prefs.v1') || '{}');
+  var s = ['17px','20px','23px','26px'][p.size == null ? 1 : p.size];
+  document.documentElement.style.setProperty('--fs', s);
+  var sysDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  var th = p.theme || (sysDark ? 'dark' : 'light');
+  document.addEventListener('DOMContentLoaded', function () {
+    document.body.classList.add('t-' + th);
+  });
+} catch (e) {}
+</script>
+
+<noscript><style>
+/* without JavaScript the cover cannot be dismissed, and the panels do not open */
+#cvoverlay { display: none !important; }
+.nojs { display: block; }
+</style></noscript>
+</head>
+<body class="" data-page="marks">
+<header class="bar">
+  <a class="bar-b" href="./" aria-label="Contents">Contents</a>
+  <div class="bar-t">Marks</div>
+  <div class="bar-r">
+    <button class="bar-b" id="btn-marks" aria-label="My marks">Marks</button>
+    <button class="bar-b" id="btn-mode" aria-label="Switch between bright and dark">Dark</button>
+    <button class="bar-b" id="btn-read" aria-label="Reading settings">Aa</button>
+  </div>
+</header>
+<main class="wrap">
+<h1>My highlights, notes and questions</h1>
+<p class="sub">Everything on this page is stored on this iPad or phone only. It is not sent anywhere until you email or export it.
+Press Back up after reading, so a copy is kept in the Files app.</p>
+<p class="mk-state" id="mk-state"></p>
+<div class="marks-tools">
+  <button class="btn btn-p" id="mk-email">Email to Dad</button>
+  <button class="btn" id="mk-backup">Back up</button>
+  <button class="btn" id="mk-restore">Put back</button>
+  <button class="btn" id="mk-export">Export</button>
+  <button class="btn" id="mk-copy">Copy all</button>
+  <select class="btn" id="mk-filter">
+    <option value="all">Everything</option>
+    <option value="highlight">Highlights only</option>
+    <option value="note">Notes only</option>
+    <option value="request">Questions only</option>
+  </select>
+</div>
+<input type="file" id="mk-file" accept=".json,application/json,.txt,text/plain" tabindex="-1" aria-hidden="true">
+<div id="mk-list" class="marks-list"></div>
+</main>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body></html>
