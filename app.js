@@ -1,6 +1,7 @@
 /* Read the Wind and Start Clean (Lukas) — reading, marking and export.
    Same reading engine as the 49er theory book, build of 14 September 2026,
-   with the storage repairs of build 5 (25 September 2026).
+   with the storage repairs of build 5 (25 September 2026) and, from build 6
+   (4 October 2026), marking in every chapter of the one-file book.
    Everything is stored on this device. Nothing leaves it until Export. */
 (function () {
   'use strict';
@@ -290,12 +291,14 @@
       '<button class="btn" id="pn-ask">Still not clear</button>' +
       (kind === 'g' ? '<a class="btn" href="glossary.html#' + esc(id) + '">All terms</a>' : '') +
       '<button class="btn btn-p" data-close="1">Close</button></div>');
+    var art = artOf(el);
     sheet.querySelector('#pn-ask').addEventListener('click', function () {
-      askAboutPanel(rec.t, secnum);
+      askAboutPanel(rec.t, secnum, art);
     });
   }
 
-  function askAboutPanel(title, secnum) {
+  function askAboutPanel(title, secnum, art) {
+    var pch = art ? art.dataset.ch : null, pkey = art ? art.dataset.key : null;
     openSheet(
       '<h3>Ask for a better explanation</h3>' +
       '<p class="meta">' + esc(title) + (secnum ? ' &middot; section ' + esc(secnum) : '') + '</p>' +
@@ -323,7 +326,7 @@
 
     function commitPanel() {
       var mk = {
-        id: uid(), ch: chNum, key: chKey, sec: secnum || chNum, scope: 'panel',
+        id: uid(), ch: pch, key: pkey, sec: secnum || pch, scope: 'panel',
         block: '', start: 0, end: 0, raw: '', quote: title,
         type: 'request', need: pneed || 'Explain it more simply',
         note: sheet.querySelector('#pn-t').value.trim(), ts: Date.now()
@@ -367,9 +370,15 @@
   if (mb) mb.addEventListener('click', function () { location.href = 'marks.html'; });
 
   // ---------------------------------------------------------- page setup
-  var article = document.querySelector('article.ch');
-  var chNum = article ? article.dataset.ch : null;
-  var chKey = article ? article.dataset.key : null;
+  /* A page holds one chapter. The one-file book holds all of them in one
+     document, so everything below works on whichever chapter the words,
+     the mark or the button belongs to. */
+  var articles = Array.prototype.slice.call(document.querySelectorAll('article.ch'));
+  function artOf(el) { return el && el.closest ? el.closest('article.ch') : null; }
+  function artFor(ch) {
+    for (var i = 0; i < articles.length; i++) if (articles[i].dataset.ch === ch) return articles[i];
+    return null;
+  }
 
   // wrap tables so a wide appendix table scrolls rather than breaking the page
   Array.prototype.forEach.call(document.querySelectorAll('.wrap table'), function (tb) {
@@ -397,7 +406,8 @@
   }
 
   /* The readable quote for a range of the block's text, with the source-tag
-     chips left out, so an exported passage reads as the book reads. */
+     chips and the small why buttons left out, so an exported passage reads
+     as the book reads. */
   function sliceClean(el, start, end) {
     var walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
     var n, pos = 0, out = '';
@@ -406,7 +416,7 @@
       pos = b;
       if (b <= start) continue;
       if (a >= end) break;
-      if (n.parentNode && n.parentNode.closest && n.parentNode.closest('.tg')) continue;
+      if (n.parentNode && n.parentNode.closest && n.parentNode.closest('.tg, .lmb')) continue;
       out += n.nodeValue.slice(Math.max(0, start - a), Math.min(len, end - a));
     }
     return out.replace(/\s+/g, ' ').replace(/\s+([,.;:)])/g, '$1').trim();
@@ -442,7 +452,7 @@
      letters or more is looked for in the same section, then in the chapter,
      and used only if it occurs there once. A mark that cannot be placed is
      still kept, and still listed on the Marks page. */
-  function locate(mk) {
+  function locate(mk, article) {
     var raw = mk.raw;
     if (typeof raw !== 'string' || !raw) return null;
     var el = null;
@@ -477,8 +487,9 @@
   }
 
   function renderMark(mk) {
-    if (!article || mk.ch !== chNum || mk.scope === 'chapter') return false;
-    var at = locate(mk);
+    var art = artFor(mk.ch);
+    if (!art || mk.scope === 'chapter') return false;
+    var at = locate(mk, art);
     if (!at) return false;
     var cls = 'hl' + (mk.note ? ' has-note' : '') + (mk.type === 'request' ? ' is-request' : '');
     return wrapRange(at.el, at.s, at.s + mk.raw.length, { cls: cls, id: mk.id });
@@ -488,26 +499,29 @@
 
   function renderAll() {
     drawn = JSON.stringify(marks);
-    if (!article) return;
-    Array.prototype.forEach.call(article.querySelectorAll('mark.hl'), function (m) {
-      var p = m.parentNode;
-      while (m.firstChild) p.insertBefore(m.firstChild, m);
-      p.removeChild(m);
-      p.normalize();
+    if (!articles.length) return;
+    articles.forEach(function (art) {
+      Array.prototype.forEach.call(art.querySelectorAll('mark.hl'), function (m) {
+        var p = m.parentNode;
+        while (m.firstChild) p.insertBefore(m.firstChild, m);
+        p.removeChild(m);
+        p.normalize();
+      });
     });
     var orphans = 0;
     marks.forEach(function (mk) {
-      if (mk.ch === chNum && mk.scope !== 'chapter' && mk.scope !== 'panel') {
+      if (artFor(mk.ch) && mk.scope !== 'chapter' && mk.scope !== 'panel') {
         if (!renderMark(mk)) orphans++;
       }
     });
-    if (orphans) console.warn(orphans + ' mark(s) could not be placed in this chapter');
-    var btn = document.getElementById('ask-chapter');
-    if (btn) {
-      var has = marks.some(function (m) { return m.ch === chNum && m.scope === 'chapter'; });
+    if (orphans) console.warn(orphans + ' mark(s) could not be placed on this page');
+    articles.forEach(function (art) {
+      var btn = art.querySelector('.askbtn');
+      if (!btn) return;
+      var has = marks.some(function (m) { return m.ch === art.dataset.ch && m.scope === 'chapter'; });
       btn.classList.toggle('has', has);
       btn.querySelector('.askbtn-l').textContent = has ? 'Request sent to the list' : 'Request more detail';
-    }
+    });
   }
 
   // ------------------------------------------------------ selection tool
@@ -524,14 +538,15 @@
   function hideTool() { tool.classList.remove('on'); pending = null; }
 
   function onSelect() {
-    if (!article) return;
+    if (!articles.length) return;
     var sel = window.getSelection();
     if (!sel || sel.isCollapsed || sel.rangeCount === 0) { hideTool(); return; }
     var r = sel.getRangeAt(0);
     var host = r.commonAncestorContainer;
     if (host.nodeType === 3) host = host.parentNode;
     var block = host.closest('[data-b]');
-    if (!block || !article.contains(block)) { hideTool(); return; }
+    var art = artOf(block);
+    if (!block || !art) { hideTool(); return; }
 
     var start = offsetIn(block, r.startContainer, r.startOffset);
     var end = offsetIn(block, r.endContainer, r.endOffset);
@@ -544,6 +559,7 @@
 
     var sec = block.closest('[data-sec]');
     pending = {
+      ch: art.dataset.ch, key: art.dataset.key,
       block: block.dataset.b,
       sec: sec ? sec.dataset.sec : (block.dataset.b || '').split(':')[0],
       start: start, end: end,
@@ -583,7 +599,7 @@
 
   function addMark(p, type, note, need) {
     var mk = {
-      id: uid(), ch: chNum, key: chKey, sec: p.sec, block: p.block,
+      id: uid(), ch: p.ch, key: p.key, sec: p.sec, block: p.block,
       start: p.start, end: p.end, raw: p.raw, quote: p.quote,
       type: type, note: note || '', need: need || '', ts: Date.now()
     };
@@ -678,8 +694,10 @@
   }
 
   // -------------------------------------------------- chapter ask button
-  var askBtn = document.getElementById('ask-chapter');
-  if (askBtn) askBtn.addEventListener('click', function () {
+  Array.prototype.forEach.call(document.querySelectorAll('.askbtn'), function (askBtn) {
+  askBtn.addEventListener('click', function () {
+    var art = artOf(askBtn);
+    var chNum = askBtn.dataset.ch, chKey = art ? art.dataset.key : askBtn.dataset.ch;
     var existing = latest().filter(function (m) {
       return m.ch === chNum && m.scope === 'chapter';
     })[0];
@@ -735,6 +753,7 @@
       if (existing) removeMark(existing.id);
       closeSheet();
     });
+  });
   });
 
   // ----------------------------------------------------------- marks page
@@ -1312,6 +1331,20 @@
   });
 
   window.addEventListener('pagehide', function () { if (speaking) stopTour(); });
+
+  /* The pictures move only while they are on the screen. A chapter holds
+     dozens of small animations, and an iPad should not run the hidden ones. */
+  if ('IntersectionObserver' in window) {
+    var figio = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        var sv = en.target;
+        if (!sv.pauseAnimations) return;
+        try { if (en.isIntersecting) sv.unpauseAnimations(); else sv.pauseAnimations(); }
+        catch (e) { /* a browser without SMIL control: the picture simply keeps moving */ }
+      });
+    }, { rootMargin: '150px 0px' });
+    Array.prototype.forEach.call(document.querySelectorAll('figure.fig svg'), function (sv) { figio.observe(sv); });
+  }
 
   /* the warning for the claude.ai copy, once per visit, under the top bar so
      every page and every view of the one-file book shows it */

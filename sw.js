@@ -1,6 +1,7 @@
-/* Read the Wind: offline shell. ES5 only. Bump CACHE on every change to a cached file. */
-var CACHE = 'read-the-wind-build5';
-var ASSETS = ['./', 'index.html', 'about.html', 'ch3.html', 'glossary.html', 'sources.html',
+/* Read the Wind: offline shell. ES5 only. build.py writes CACHE: the build number
+   plus a fingerprint of every file, so a changed file always gives a new cache. */
+var CACHE = 'read-the-wind-build7-18bb91bb';
+var ASSETS = ['./', 'index.html', 'about.html', 'ch2.html', 'ch3.html', 'glossary.html', 'sources.html',
               'marks.html', 'app.css', 'app.js', 'data.js', 'manifest.webmanifest',
               'icon-180.png', 'icon-192.png', 'icon-512.png'];
 

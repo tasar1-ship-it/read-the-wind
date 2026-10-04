@@ -536,3 +536,6 @@ mark.hl.is-request { background: none; border-bottom: 2px dashed var(--navy-2); 
 .framenote .btn { flex: none; }
 .framewrap { padding-top: 18px; padding-bottom: 0; }
 .framewrap .framenote { margin: 0; }
+
+/* a term and the comma or full stop after it stay on one line */
+.nb { white-space: nowrap; }
