@@ -227,7 +227,7 @@
     var vs = spokenVoices().slice().sort(function (a, b) { return voiceScore(b) - voiceScore(a); });
     if (!vs.length) {
       return '<label>Voice for the walkthrough</label>' +
-        '<p class="meta">No voices have loaded yet. Press Click Me once, then come back here.</p>';
+        '<p class="meta">No voices have loaded yet. Press the yellow Listen button on the contents page once, then come back here.</p>';
     }
     var best = pickVoice();
     var opts = '<option value="">Best available (' + esc(best ? best.name : 'default') + ')</option>' +
@@ -271,9 +271,15 @@
   }
 
   /* ------------------------------------------------- explanation panels */
+  /* Build 34: a source tag {S1} in a panel is drawn as the same blue tag as
+     in the text, and opens the same source card. */
   function paras(t) {
     return String(t || '').split('\n').filter(function (s) { return s.trim(); })
-      .map(function (s) { return '<p>' + esc(s.trim()) + '</p>'; }).join('');
+      .map(function (s) {
+        return '<p>' + esc(s.trim()).replace(/\{S(\d+)\}/g, function (x, n) {
+          return '<a class="tg tg-s" href="sources.html#S' + n + '" data-s="' + n + '">S' + n + '</a>';
+        }) + '</p>';
+      }).join('');
   }
 
   function panelSheet(kind, id, el) {
@@ -421,6 +427,20 @@
     return out.replace(/\s+/g, ' ').replace(/\s+([,.;:)])/g, '$1').trim();
   }
 
+  /* which letters of the block belong to a why button or a source tag */
+  function chipAt(el) {
+    var walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+    var n, pos = 0, out = [];
+    while ((n = walk.nextNode())) {
+      var len = n.nodeValue.length;
+      if (n.parentNode && n.parentNode.closest && n.parentNode.closest('.tg, .lmb')) {
+        for (var i = 0; i < len; i++) out[pos + i] = true;
+      }
+      pos += len;
+    }
+    return out;
+  }
+
   function wrapRange(el, start, end, attrs) {
     var walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
     var n, pos = 0, targets = [];
@@ -445,53 +465,116 @@
     return targets.length > 0;
   }
 
+  /* Build 34. A mark keeps the words just before and after it (pre and post),
+     so that after a book update it is moved only to words that still sit in
+     the same place in the sentence. CTX is how many letters are kept on each
+     side. Never change it: a side shorter than CTX means the paragraph began
+     or ended there, and old marks are read that way. */
+  var CTX = 30;
+  function hasCtx(mk) { return typeof mk.pre === 'string' && typeof mk.post === 'string'; }
+  function ctxOf(full, s, e) {
+    return { pre: full.slice(Math.max(0, s - CTX), s), post: full.slice(e, e + CTX) };
+  }
+  /* The saved context still fits if a dozen letters on either side agree,
+     counted outwards from the marked words, or if both sides agree in full
+     (a short paragraph, where the mark meets both of its edges). */
+  function fits(mk, full, s) {
+    var now = ctxOf(full, s, s + mk.raw.length);
+    var a = mk.pre, b = now.pre, c = mk.post, d = now.post;
+    if (a.length < CTX) a = '\u0001' + a;
+    if (b.length < CTX) b = '\u0001' + b;
+    if (c.length < CTX) c += '\u0001';
+    if (d.length < CTX) d += '\u0001';
+    var i = 0, j = 0;
+    while (i < a.length && i < b.length && a.charAt(a.length - 1 - i) === b.charAt(b.length - 1 - i)) i++;
+    while (j < c.length && j < d.length && c.charAt(j) === d.charAt(j)) j++;
+    return i >= 12 || j >= 12 || (i === a.length && j === c.length);
+  }
+
   /* Where a marked passage sits now. The saved place first. If a later build
      has changed the paragraph or added one before it, the same words nearest
-     the old place in the same paragraph. Failing that, a passage of a dozen
-     letters or more is looked for in the same section, then in the chapter,
-     and used only if it occurs there once. A mark that cannot be placed is
-     still kept, and still listed on the Marks page. */
+     the old place in the same paragraph. Failing that, the words are looked
+     for in the same section, then in the chapter, and used only if they occur
+     there once. A mark with context is moved only to words whose context
+     still fits. An older mark without context is moved as before, but if its
+     words occur more than once, or are short, or are in another paragraph,
+     the move is a guess, and the answer says so ('check'). A mark that
+     cannot be placed is still kept, and the Marks page says it no longer
+     shows in the chapter. Nothing here changes the stored mark. */
   function locate(mk, article) {
     var raw = mk.raw;
     if (typeof raw !== 'string' || !raw) return null;
+    var ctx = hasCtx(mk), ok = ctx ? function (t, k) { return fits(mk, t, k); } : null;
     var el = null;
     try { el = article.querySelector('[data-b="' + cssq(mk.block) + '"]'); } catch (e) { /* odd name */ }
     if (el) {
       var full = blockText(el);
-      if (full.slice(mk.start, mk.end) === raw) return { el: el, s: mk.start };
-      var near = nearest(full, raw, +mk.start || 0);
-      if (near >= 0) return { el: el, s: near };
+      if (full.slice(mk.start, mk.end) === raw && (!ctx || ok(full, mk.start))) {
+        return { el: el, s: mk.start, st: 'ok', learn: !ctx };
+      }
+      var hits = every(full, raw, ok);
+      if (hits.length) {
+        var sure = ctx || (hits.length === 1 && raw.length >= 12);
+        return { el: el, s: nearest(hits, +mk.start || 0), st: sure ? 'ok' : 'check', learn: !ctx && sure };
+      }
     }
-    if (raw.length < 12) return null;
+    if (!ctx && raw.length < 12) return null;
     var blocks = Array.prototype.slice.call(article.querySelectorAll('[data-b]'));
     var sec = String(mk.block || '').split(':')[0];
     var inSec = blocks.filter(function (b) { return b.dataset.b.split(':')[0] === sec; });
-    return only(inSec, raw) || only(blocks, raw);
+    var at = only(inSec, raw, ok) || only(blocks, raw, ok);
+    if (at) at.st = ctx ? 'ok' : 'check';
+    return at;
   }
-  function only(blocks, raw) {
+  function every(t, raw, ok) {
+    var hits = [], k = t.indexOf(raw);
+    while (k >= 0) { if (!ok || ok(t, k)) hits.push(k); k = t.indexOf(raw, k + 1); }
+    return hits;
+  }
+  function only(blocks, raw, ok) {
     var hits = [];
     blocks.forEach(function (b) {
-      var t = blockText(b), k = t.indexOf(raw);
-      while (k >= 0 && hits.length < 2) { hits.push({ el: b, s: k }); k = t.indexOf(raw, k + 1); }
+      every(blockText(b), raw, ok).forEach(function (k) { hits.push({ el: b, s: k }); });
     });
     return hits.length === 1 ? hits[0] : null;
   }
-  function nearest(full, raw, at) {
-    var best = -1, j = full.indexOf(raw);
-    while (j >= 0) {
-      if (best < 0 || Math.abs(j - at) < Math.abs(best - at)) best = j;
-      j = full.indexOf(raw, j + 1);
-    }
+  function nearest(hits, at) {
+    var best = hits[0];
+    hits.forEach(function (j) { if (Math.abs(j - at) < Math.abs(best - at)) best = j; });
     return best;
   }
+
+  /* What became of each passage mark the last time its chapter was looked
+     at: 'ok', 'check' or 'gone'. Shown on the Marks page. */
+  var where = Object.create(null);
+  var learnt = [];
 
   function renderMark(mk) {
     var art = artFor(mk.ch);
     if (!art || mk.scope === 'chapter') return false;
     var at = locate(mk, art);
-    if (!at) return false;
     var cls = 'hl' + (mk.note ? ' has-note' : '') + (mk.type === 'request' ? ' is-request' : '');
-    return wrapRange(at.el, at.s, at.s + mk.raw.length, { cls: cls, id: mk.id });
+    var shown = !!at && wrapRange(at.el, at.s, at.s + mk.raw.length, { cls: cls, id: mk.id });
+    where[mk.id] = shown ? at.st : 'gone';
+    if (shown && at.learn) learnt.push({ id: mk.id, c: ctxOf(blockText(at.el), at.s, at.s + mk.raw.length) });
+    return shown;
+  }
+
+  /* An older mark found surely on its own words gets their context added, so
+     that the next update can check it too. Only the two new fields are
+     added; nothing the mark already holds is changed. */
+  function learn() {
+    var L2 = learnt;
+    learnt = [];
+    if (!L2.length || hold) return;
+    var by = Object.create(null);
+    L2.forEach(function (x) { by[x.id] = x.c; });
+    mutate(function (L) {
+      L.forEach(function (m) {
+        var c = by[m.id];
+        if (c && !hasCtx(m)) { m.pre = c.pre; m.post = c.post; }
+      });
+    });
   }
 
   function cssq(s) { return String(s).replace(/["\\]/g, '\\$&'); }
@@ -514,6 +597,8 @@
       }
     });
     if (orphans) console.warn(orphans + ' mark(s) could not be placed on this page');
+    learn();
+    drawn = JSON.stringify(marks);
     articles.forEach(function (art) {
       var btn = art.querySelector('.askbtn');
       if (!btn) return;
@@ -553,16 +638,25 @@
 
     // snap to whole words, so an exported quote never begins or ends mid-word
     var txt = blockText(block), word = /[A-Za-z0-9À-ɏ'’-]/;
-    while (start > 0 && word.test(txt.charAt(start - 1))) start--;
-    while (end < txt.length && word.test(txt.charAt(end))) end++;
+    /* Build 34: never across the label of a why button or a source tag. WebKit
+       can start a selection inside the label just before the first word, and
+       the snap then took in the label too. */
+    var chip = chipAt(block), sp = /\s/;
+    while (start < end && (chip[start] || (chip[start - 1] && sp.test(txt.charAt(start))))) start++;
+    while (end > start && (chip[end - 1] || (chip[end] && sp.test(txt.charAt(end - 1))))) end--;
+    while (start > 0 && !chip[start - 1] && word.test(txt.charAt(start - 1))) start--;
+    while (end < txt.length && !chip[end] && word.test(txt.charAt(end))) end++;
+    if (end - start < 2) { hideTool(); return; }
 
     var sec = block.closest('[data-sec]');
+    var around = ctxOf(txt, start, end);
     pending = {
       ch: art.dataset.ch, key: art.dataset.key,
       block: block.dataset.b,
       sec: sec ? sec.dataset.sec : (block.dataset.b || '').split(':')[0],
       start: start, end: end,
       raw: txt.slice(start, end),
+      pre: around.pre, post: around.post,
       quote: sliceClean(block, start, end)
     };
 
@@ -602,6 +696,7 @@
       start: p.start, end: p.end, raw: p.raw, quote: p.quote,
       type: type, note: note || '', need: need || '', ts: Date.now()
     };
+    if (hasCtx(p)) { mk.pre = p.pre; mk.post = p.post; }
     mutate(function (L) { L.push(mk); });
     renderAll();
     said(type === 'request' ? 'Request saved' : type === 'note' ? 'Note saved' : 'Highlighted');
@@ -779,10 +874,51 @@
 
   function showMarksPage() { if (document.getElementById('mk-list')) renderMarksPage(); }
 
+  /* Build 34. The Marks page of the website has no chapter open, so each
+     chapter that holds passage marks is read once, as the reader would see
+     it, to find out which marks still show there. If a chapter cannot be
+     read, nothing is said about its marks. */
+  var pages = Object.create(null);
+  function placeIn(k) {
+    var art = pages[k], any = false;
+    if (!art) return false;
+    marks.forEach(function (m) {
+      if (m.scope || !m.raw || where[m.id] || (m.key || m.ch) !== k) return;
+      var at = locate(m, art);
+      where[m.id] = at ? at.st : 'gone';
+      if (at && at.learn) learnt.push({ id: m.id, c: ctxOf(blockText(at.el), at.s, at.s + m.raw.length) });
+      any = true;
+    });
+    return any;
+  }
+  function checkPlaces() {
+    if (articles.length || !window.fetch || !window.DOMParser) return;
+    var any = false;
+    marks.forEach(function (m) {
+      if (m.scope || !m.raw || where[m.id]) return;
+      var k = String(m.key || m.ch);
+      if (!/^\w{1,8}$/.test(k)) return;
+      if (pages[k]) { any = placeIn(k) || any; return; }
+      if (pages[k] !== undefined) return;         // on its way, or could not be read
+      pages[k] = null;
+      fetch('ch' + k + '.html').then(function (r) {
+        if (!r.ok) throw new Error('no page');
+        return r.text();
+      }).then(function (t) {
+        pages[k] = new DOMParser().parseFromString(t, 'text/html').querySelector('article.ch') || false;
+        if (placeIn(k)) { learn(); renderMarksPage(); }
+      }).catch(function () { pages[k] = false; });
+    });
+    if (any) learn();
+  }
+  var GONE = 'This part of the book has changed, so this mark no longer shows in the chapter. It is still kept here.';
+  var MOVED = 'This part of the book has changed. Open it and check that this mark is still on the words you meant.';
+
   function renderMarksPage() {
     var list = document.getElementById('mk-list');
     if (!list) return;
     latest();
+    checkPlaces();
     var st = document.getElementById('mk-state');
     if (st) st.innerHTML = backupState();
     var f = (document.getElementById('mk-filter') || {}).value || 'all';
@@ -808,6 +944,8 @@
         (m.quote ? '<div class="mk-q">' + esc(m.quote) + '</div>' : '') +
         (m.note ? '<p class="mk-n"><b>' +
           (m.type === 'request' ? 'Asked' : 'Note') + ':</b> ' + esc(m.note) + '</p>' : '') +
+        (where[m.id] === 'gone' ? '<p class="mk-w">' + GONE + '</p>' :
+         where[m.id] === 'check' ? '<p class="mk-w">' + MOVED + '</p>' : '') +
         '<div class="mk-a">' +
         '<a href="ch' + esc(m.key || m.ch) + '.html#' +
         (m.scope === 'chapter' ? '' : 'sec-' + String(m.sec).replace(/\./g, '-')) +
@@ -856,6 +994,7 @@
     if (scope) out.scope = scope;
     else if (!out.raw) return null;               // a passage mark needs its words
     if (typeof m.ed === 'number' && isFinite(m.ed)) out.ed = m.ed;
+    if (!scope && hasCtx(m)) { out.pre = m.pre.slice(-CTX); out.post = m.post.slice(0, CTX); }
     return out;
   }
 
@@ -1041,7 +1180,7 @@
     var lines = ['Read the Wind book: marks and requests',
                  'Exported ' + new Date().toLocaleDateString('en-GB',
                    { day: 'numeric', month: 'long', year: 'numeric' }),
-                 'Build ' + (D.BUILD || ''), ''];
+                 'From ' + (D.BUILD || ''), ''];
     var lastCh = null;
     order().forEach(function (m) {
       if (m.ch !== lastCh) { lines.push('', '## ' + chTitle(m.ch), ''); lastCh = m.ch; }
@@ -1096,7 +1235,7 @@
     if (mk.need) L.push('Needs: ' + mk.need);
     if (mk.quote) L.push('', 'Passage:', '"' + mk.quote + '"');
     if (mk.note) L.push('', 'Asked:', mk.note);
-    L.push('', 'Build ' + (D.BUILD || ''));
+    L.push('', 'From ' + (D.BUILD || ''));
     return L.join('\n');
   }
 
@@ -1180,7 +1319,7 @@
     'Three. The pictures move. Watch each one a few times. The wind arrow is always at the top, and the mark is always right under it.',
     'Four. Every section ends with On the water: one thing to try, and how you know you have got it.',
     'Five. Select any words with your finger and you can highlight them, write a note, ask a question, or copy them.',
-    'Six. Everything you mark stays on this iPad or phone. Open Marks when you are ready and press Email to Dad. The email is already written. Type Dad in the To line, pick him, and tap send. Press Back up there too, after reading, so a copy is kept safe.',
+    'Six. Everything you mark stays on this iPad or phone. Open Marks when you are ready and press Email to Dad. If the email says the list is on the clipboard, press and hold in the email and tap Paste. Type Dad in the To line and pick him. Check that the To line says Dad, then tap send. Press Back up there too, after reading, so a copy is kept safe.',
     'That is everything. Enjoy it, and see you on the water.'
   ];
 
@@ -1280,7 +1419,7 @@
   function setTourBtn(on) {
     if (!tourBtn) return;
     tourBtn.classList.toggle('playing', on);
-    tourBtn.querySelector('.tourbtn-l').textContent = on ? 'Stop' : 'Click Me';
+    tourBtn.querySelector('.tourbtn-l').textContent = on ? 'Stop' : 'Listen: how this book works';
     tourBtn.querySelector('.tourbtn-i').innerHTML = on ? '&#9632;' : '&#9654;';
   }
 
@@ -1367,6 +1506,7 @@
   }
 
   renderAll();
+  if (articles.length) showMarksPage();           // the one-file book: its Marks view now knows what shows
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {

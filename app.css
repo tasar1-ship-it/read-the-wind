@@ -125,7 +125,7 @@ h1.big { font-size: 2.1em; }
 .secnum { flex: none; color: var(--brass); font-variant-numeric: tabular-nums; }
 .sectitle { flex: 1; }
 
-h2.parth {
+h2.parth, h2.rdh {
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 1em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
   color: var(--ink-3); margin: 2.2em 0 .8em;
@@ -212,7 +212,7 @@ li { margin: 0 0 .55em; }
 
 /* -------------------------------------------------------------- contents */
 .chlist { list-style: none; margin: 0; padding: 0; }
-.chrow { margin: 0 0 2px; }
+.chrow, .rdrow { margin: 0 0 2px; }
 .chlink {
   display: flex; gap: .8em; align-items: baseline; text-decoration: none;
   padding: .7em .2em; color: var(--ink); border-bottom: 1px solid var(--rule);
@@ -230,13 +230,13 @@ li { margin: 0 0 .55em; }
 .subs summary::-webkit-details-marker, .secnav summary::-webkit-details-marker { display: none; }
 .subs summary::before, .secnav summary::before { content: "▸ "; }
 .subs[open] summary::before, .secnav[open] summary::before { content: "▾ "; }
-.seclist, .secnav-l { list-style: none; margin: .2em 0 .8em; padding: 0; }
-.seclist li, .secnav-l li { margin: 0; }
-.seclist a, .secnav-l a {
+.seclist, .secnav-l, .rdlist { list-style: none; margin: .2em 0 .8em; padding: 0; }
+.seclist li, .secnav-l li, .rdlist li { margin: 0; }
+.seclist a, .secnav-l a, .rdlist a {
   display: flex; gap: .7em; text-decoration: none; color: var(--ink-2);
   font-size: .82em; padding: .4em 0; border-bottom: 1px solid var(--bg-3);
 }
-.seclist .n, .secnav-l .n {
+.seclist .n, .secnav-l .n, .rdlist .n {
   flex: none; width: 3.2em; color: var(--brass); font-variant-numeric: tabular-nums;
 }
 .secnav { margin: 1.4em 0 0; padding: .6em 0 0; border-top: 1px solid var(--rule); }
@@ -407,6 +407,8 @@ mark.hl.is-request { background: none; border-bottom: 2px dashed var(--navy-2); 
 }
 .mk-n { color: var(--ink-2); margin: 8px 0 0; }
 .mk-n b { color: var(--navy); }
+/* build 34: a mark the chapter no longer shows, or one that may have moved */
+.mk-w { color: var(--ink); margin: 8px 0 0; padding-left: 12px; border-left: 3px solid var(--warn); }
 .mk-a { display: flex; gap: 8px; margin-top: 12px; }
 .mk-a button, .mk-a a {
   appearance: none; cursor: pointer; font: inherit; font-size: .9em; text-decoration: none;
@@ -563,5 +565,20 @@ body.t-dark .fig .sheen  { stroke: #E8EAED; opacity: .55; }
 .fig .wake   { stroke: #24557F; stroke-width: 1.8; fill: none; stroke-linecap: round; opacity: .85; }
 .fig .sponge { fill: var(--warn); stroke: var(--bg); stroke-width: 1; }
 body.t-dark .fig .cur  { stroke: #5FD3D3; opacity: .5; }
-body.t-dark .fig .wave { stroke: #7DB8EA; opacity: .35; }
-body.t-dark .fig .wake { stroke: #7DB8EA; opacity: .8; }
+body.t-dark .fig .wave { stroke: #8A949E; opacity: .35; }
+body.t-dark .fig .wake { stroke: #8A949E; opacity: .8; }
+/* in dark, your boat, its track and anything else drawn in navy turn near-white inside the pictures,
+   so the light blue stays the wind's alone; the reading pages keep their own navy */
+body.t-dark .fig { --navy: #E6EDF3; }
+/* build 34: the Race day list on the contents page (rdh, rdrow and rdlist look like a part, a
+   chapter row and its sections, but are not counted as them), clear of the top bar when a link opens it */
+#raceday { scroll-margin-top: 72px; }
+
+/* build 34: the Race day link beside Start on the cover */
+.cvpage .cvstartwrap { align-items: center; gap: calc(6 * var(--u)); }
+.cvpage .cvrace {
+  font-size: calc(12.5 * 0.3528 * var(--u)); letter-spacing: 0.14em; text-transform: uppercase;
+  font-weight: 700; color: #C9A66B; text-decoration: none;
+  border: calc(0.4 * var(--u)) solid #C9A66B; border-radius: calc(1.2 * var(--u));
+  padding: calc(3.8 * var(--u)) calc(9 * var(--u)); -webkit-tap-highlight-color: transparent;
+}
